@@ -8,7 +8,7 @@
   if (!/\.(md|markdown|mkd|mdown)$/.test(path)) return;
 
   // Avoid double-processing (e.g. if the script somehow runs twice).
-  if (document.documentElement.dataset.mdViewer === "1") return;
+  if (document.documentElement.dataset.markdownViewer === "1") return;
 
   // Grab the raw markdown. When Chrome displays a text file it wraps the
   // contents in a single <pre>; otherwise fall back to the body text.
@@ -18,7 +18,7 @@
   // If there's no meaningful text, leave the page alone.
   if (!raw || !raw.trim()) return;
 
-  document.documentElement.dataset.mdViewer = "1";
+  document.documentElement.dataset.markdownViewer = "1";
 
   // Configure marked (GitHub-flavored, with syntax highlighting via hljs).
   const renderer = new marked.Renderer();
@@ -91,7 +91,7 @@
 
   // Replace body with the rendered markdown inside a styled container.
   document.body.innerHTML = "";
-  document.body.classList.add("md-viewer-body");
+  document.body.classList.add("markdown-viewer-body");
   const article = document.createElement("article");
   article.className = "markdown-body";
   article.innerHTML = html;

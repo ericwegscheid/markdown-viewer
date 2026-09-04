@@ -35,7 +35,7 @@ html {
   background: var(--md-bg);
 }
 
-body.md-viewer-body {
+body.markdown-viewer-body {
   margin: 0;
   background: var(--md-bg);
   color: var(--md-fg);
