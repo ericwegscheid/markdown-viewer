@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Markdown Viewer",
+  "version": "1.0.0",
+  "description": "Renders *.md files as human-readable, GitHub-styled HTML.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [],
+  "host_permissions": [
+    "file://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "file:///*.md",
+        "file:///*.markdown",
+        "file:///*.mkd",
+        "file:///*.mdown",
+        "*://*/*.md",
+        "*://*/*.markdown",
+        "*://*/*.mkd",
+        "*://*/*.mdown"
+      ],
+      "js": ["highlight.min.js", "marked.min.js", "content.js"],
+      "css": ["markdown.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["github-dark.min.css", "github-light.min.css"],
+      "matches": ["file:///*", "*://*/*"]
+    }
+  ],
+  "action": {
+    "default_title": "Markdown Viewer"
+  }
+}
