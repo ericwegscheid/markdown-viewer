@@ -1,33 +1,40 @@
-/* Markdown Viewer — GitHub-like styling for rendered .md files.
-   Light and dark variants follow the OS color scheme. */
+/* Markdown Viewer — styling for rendered .md files, using the palette from
+   colors.css (work-tab project). Light and dark variants follow the OS
+   color scheme.
+
+   colors.css keeps its accent hues (reds/greens/blues/magentas/cyans/
+   yellows) identical across light and dark — only backgrounds, borders,
+   and body text flip per theme. The tokens below follow that same split:
+   the first block is constant across both themes, the rest flips in the
+   dark media query. */
 
 :root {
-  --md-bg: #ffffff;
-  --md-fg: #1f2328;
-  --md-muted: #59636e;
-  --md-border: #d1d9e0;
-  --md-link: #0969da;
-  --md-code-bg: rgba(129, 139, 152, 0.12);
-  --md-code-block-bg: #f6f8fa;
-  --md-quote-fg: #59636e;
-  --md-quote-border: #d1d9e0;
-  --md-table-alt: #f6f8fa;
-  --md-mark-bg: #fff8c5;
+  /* Constant across themes (colors.css doesn't override these for light) */
+  --md-link: #0087ff; /* --bright-blue / --status-info */
+  --md-muted: #8793b3; /* --normal-white */
+  --md-quote-fg: #8793b3; /* --normal-white */
+  --md-mark-bg: #d7d75f; /* --bright-yellow */
+  --md-mark-fg: #0f0f0f; /* fixed dark text so mark stays legible on --md-mark-bg in both themes */
+
+  /* Light theme (default) */
+  --md-bg: #f5f6fa; /* --primary-background */
+  --md-fg: #111827; /* --primary-foreground */
+  --md-border: #c8cdd8; /* --panel-border */
+  --md-code-bg: rgba(0, 0, 0, 0.06); /* --brighter */
+  --md-code-block-bg: #dde1eb; /* --bright-black */
+  --md-quote-border: #c8cdd8; /* --panel-border */
+  --md-table-alt: #dde1eb; /* --bright-black */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --md-bg: #0d1117;
-    --md-fg: #e6edf3;
-    --md-muted: #9198a1;
-    --md-border: #3d444d;
-    --md-link: #4493f8;
-    --md-code-bg: rgba(101, 108, 118, 0.2);
-    --md-code-block-bg: #161b22;
-    --md-quote-fg: #9198a1;
-    --md-quote-border: #3d444d;
-    --md-table-alt: #161b22;
-    --md-mark-bg: rgba(187, 128, 9, 0.3);
+    --md-bg: #101010; /* --primary-background */
+    --md-fg: #a0abc4; /* --primary-foreground */
+    --md-border: #333; /* --panel-border */
+    --md-code-bg: rgba(255, 255, 255, 0.06); /* --brighter */
+    --md-code-block-bg: #1d1d1d; /* --bright-black */
+    --md-quote-border: #333; /* --panel-border */
+    --md-table-alt: #1d1d1d; /* --bright-black */
   }
 }
 

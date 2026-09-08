@@ -53,13 +53,25 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    navigation (`location.hash`) is re-applied manually afterward since the
    DOM it pointed at no longer exists.
 
-Third-party libraries (`marked.min.js`, `highlight.min.js`, the
-`github-*.min.css` hljs themes) are vendored, minified files — treat them
-as opaque; update by replacing them with a newer minified build rather than
-hand-editing. `markdown.css` is the only stylesheet meant to be edited
-directly; it owns both the GitHub-like page theme (light + dark, keyed off
-`prefers-color-scheme`) and the collapsible-section styling
-(`.md-h2-section`, `.md-h2-toggle`, `.collapsed`).
+Third-party libraries `marked.min.js` and `highlight.min.js` are vendored,
+minified files — treat them as opaque; update by replacing them with a
+newer minified build rather than hand-editing.
+
+`markdown.css` and the two `github-*.min.css` files are hand-maintained,
+not vendored: both are a custom color theme sourced from
+`colors.css` in the sibling `work-tab` project
+(`~/git/github.com/ericwegscheid/work-tab/common/css/base/colors.css`),
+not GitHub's actual colors despite the filenames. `colors.css` keeps its
+accent hues (red/green/blue/magenta/cyan/yellow) identical across light
+and dark and only flips backgrounds/borders/text per theme — both files
+here follow that same split (see the `--md-*` custom properties at the
+top of `markdown.css` for the token-to-source mapping). `markdown.css`
+owns the page theme and the collapsible-section styling
+(`.md-h2-section`, `.md-h2-toggle`, `.collapsed`); the `github-*.min.css`
+files own hljs code-block syntax token colors. Keep both in sync with
+`colors.css` if that palette changes, and keep the `github-*.min.css`
+filenames as-is since `manifest.json` and `content.js` reference them
+directly.
 
 The two hljs theme CSS files are listed as `web_accessible_resources`
 (rather than injected via the manifest's `content_scripts.css`) because
