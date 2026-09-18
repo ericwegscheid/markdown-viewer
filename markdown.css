@@ -100,6 +100,7 @@ body.markdown-viewer-body {
   flex: none;
   color: var(--md-muted);
   font-weight: 400;
+  margin-left: auto;
 }
 
 .markdown-body .md-h2-section.collapsed .md-h2-toggle::after {
