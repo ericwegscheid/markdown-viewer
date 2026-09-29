@@ -11,6 +11,7 @@ When you open a URL whose path ends in `.md`, `.markdown`, `.mkd`, or
 
 - parses the raw markdown with [marked](https://marked.js.org/) (GitHub-flavored),
 - syntax-highlights fenced code blocks with [highlight.js](https://highlightjs.org/),
+- renders ` ```mermaid ` fenced blocks as diagrams with [Mermaid](https://mermaid.js.org/),
 - replaces the raw text with a clean, GitHub-like layout that follows your
   OS light/dark color scheme.
 
@@ -33,6 +34,7 @@ Open any `.md` file (e.g. drag one into Chrome) and it renders automatically.
 | `markdown.css` | GitHub-like page styling (light + dark) |
 | `marked.min.js` | Markdown parser (v4.3.0) |
 | `highlight.min.js` | Syntax highlighter (v11.9.0) |
+| `mermaid.min.js` | Diagram renderer for ` ```mermaid ` blocks (v11.17.2) |
 | `github-light.min.css` / `github-dark.min.css` | hljs themes, picked at runtime |
 
 ## Notes

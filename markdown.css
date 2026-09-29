@@ -16,6 +16,21 @@
   --md-mark-bg: #d7d75f; /* --bright-yellow */
   --md-mark-fg: #0f0f0f; /* fixed dark text so mark stays legible on --md-mark-bg in both themes */
 
+  /* Accent hues — not used by this file directly; content.js reads them to
+     build the mermaid diagram theme. */
+  --md-accent-red: #cb3853; /* --normal-red */
+  --md-accent-bright-red: #ff3b52; /* --bright-red */
+  --md-accent-yellow: #ffab5f; /* --normal-yellow */
+  --md-accent-bright-yellow: #d7d75f; /* --bright-yellow */
+  --md-accent-green: #0a7a3d; /* --dark-green */
+  --md-accent-teal: #0e759d; /* --normal-green */
+  --md-accent-cyan: #0087af; /* --normal-cyan */
+  --md-accent-bright-cyan: #01b3a8; /* --bright-cyan */
+  --md-accent-blue: #555588; /* --normal-blue */
+  --md-accent-bright-blue: #0087ff; /* --bright-blue */
+  --md-accent-magenta: #5f5fff; /* --normal-magenta */
+  --md-accent-bright-magenta: #c833ec; /* --bright-magenta */
+
   /* Light theme (default) */
   --md-bg: #f5f6fa; /* --primary-background */
   --md-fg: #111827; /* --primary-foreground */
@@ -24,6 +39,7 @@
   --md-code-block-bg: #dde1eb; /* --bright-black */
   --md-quote-border: #c8cdd8; /* --panel-border */
   --md-table-alt: #dde1eb; /* --bright-black */
+  --md-selection: #c8d0e0; /* --selection-background */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -35,6 +51,7 @@
     --md-code-block-bg: #1d1d1d; /* --bright-black */
     --md-quote-border: #333; /* --panel-border */
     --md-table-alt: #1d1d1d; /* --bright-black */
+    --md-selection: #3e4451; /* --selection-background */
   }
 }
 
@@ -109,6 +126,36 @@ body.markdown-viewer-body {
 
 .markdown-body .md-h2-section.collapsed > :not(.md-h2-toggle) {
   display: none;
+}
+
+.md-collapse-all {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  padding: 4px 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+    Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  color: var(--md-fg);
+  background: var(--md-code-block-bg);
+  border: 1px solid var(--md-border);
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.md-collapse-all:hover {
+  border-color: var(--md-muted);
+}
+
+.md-collapse-all:focus-visible {
+  outline: 2px solid var(--md-link);
+  outline-offset: 2px;
+}
+
+@media print {
+  .md-collapse-all { display: none; }
 }
 
 .markdown-body h1 {
@@ -192,6 +239,12 @@ body.markdown-viewer-body {
   font-size: 100%;
   background: transparent;
   border: 0;
+}
+
+.markdown-body .mermaid {
+  margin-bottom: 16px;
+  overflow-x: auto;
+  text-align: center;
 }
 
 .markdown-body table {

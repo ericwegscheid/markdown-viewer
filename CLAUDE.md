@@ -38,13 +38,17 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    pre-rendered HTML or files served as a download
    (`Content-Disposition: attachment`) are never intercepted.
 3. **Parse + highlight** — `marked` (GFM mode) converts markdown to HTML;
-   its `highlight()` callback delegates fenced code blocks to `hljs`.
+   its `highlight()` callback delegates fenced code blocks to `hljs`
+   (except `mermaid` blocks, which are passed through as escaped text).
 4. **Post-process** — `wrapH2Sections()` groups each `<h2>` and its
    following siblings into a `<section class="md-h2-section">` (content
    before the first `<h2>` is left alone), and
    `makeH2SectionsCollapsible()` wires a click handler on each `<h2>` to
    toggle a `.collapsed` class on its section — this is what
-   `markdown.css` uses to hide/show section bodies.
+   `markdown.css` uses to hide/show section bodies. After the article is
+   attached, `addCollapseAllToggle()` adds a fixed top-right
+   `button.md-collapse-all` that collapses all sections (or expands them
+   all when every one is already collapsed).
 5. **Rebuild the document** — `<head>` is cleared and repopulated with a
    charset meta tag and a `<link>` to whichever hljs theme
    (`github-dark.min.css` / `github-light.min.css`) matches
@@ -52,8 +56,17 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    `article.markdown-body` containing the rendered HTML. In-page anchor
    navigation (`location.hash`) is re-applied manually afterward since the
    DOM it pointed at no longer exists.
+6. **Render diagrams** — `renderMermaid()` replaces each
+   `pre > code.language-mermaid` with a `div.mermaid` and calls
+   `mermaid.run()` using mermaid's `base` theme, with `themeVariables`
+   built by `mermaidThemeVariables()` from the `--md-*` tokens in
+   `markdown.css` (read via `getComputedStyle`, so they follow
+   `prefers-color-scheme`).
+   This runs after the article is attached so mermaid can measure text,
+   and the hash scroll is re-applied once rendering settles.
 
-Third-party libraries `marked.min.js` and `highlight.min.js` are vendored,
+Third-party libraries `marked.min.js`, `highlight.min.js`, and
+`mermaid.min.js` (the UMD build from `mermaid/dist/`) are vendored,
 minified files — treat them as opaque; update by replacing them with a
 newer minified build rather than hand-editing.
 
@@ -68,7 +81,9 @@ here follow that same split (see the `--md-*` custom properties at the
 top of `markdown.css` for the token-to-source mapping). `markdown.css`
 owns the page theme and the collapsible-section styling
 (`.md-h2-section`, `.md-h2-toggle`, `.collapsed`); the `github-*.min.css`
-files own hljs code-block syntax token colors. Keep both in sync with
+files own hljs code-block syntax token colors. `markdown.css` also
+defines `--md-accent-*` tokens that no CSS rule uses — they exist only as
+the palette source for mermaid diagrams. Keep both in sync with
 `colors.css` if that palette changes, and keep the `github-*.min.css`
 filenames as-is since `manifest.json` and `content.js` reference them
 directly.

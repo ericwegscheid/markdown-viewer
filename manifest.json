@@ -25,7 +25,7 @@
         "*://*/*.mkd",
         "*://*/*.mdown"
       ],
-      "js": ["highlight.min.js", "marked.min.js", "content.js"],
+      "js": ["highlight.min.js", "marked.min.js", "mermaid.min.js", "content.js"],
       "css": ["markdown.css"],
       "run_at": "document_end"
     }
