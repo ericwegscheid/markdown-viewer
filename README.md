@@ -30,7 +30,8 @@ Open any `.md` file (e.g. drag one into Chrome) and it renders automatically.
 | File | Purpose |
 |---|---|
 | `manifest.json` | MV3 manifest; registers the content script for `*.md` URLs |
-| `content.js` | Reads the raw markdown, renders it, rebuilds the page |
+| `viewer.js` | Reusable renderer (`MarkdownViewer.parse` / `enhance`); also loads under Node |
+| `content.js` | Reads the raw markdown, rebuilds the page via `viewer.js` |
 | `markdown.css` | GitHub-like page styling (light + dark) |
 | `marked.min.js` | Markdown parser (v4.3.0) |
 | `highlight.min.js` | Syntax highlighter (v11.9.0) |

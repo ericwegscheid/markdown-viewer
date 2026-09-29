@@ -24,9 +24,21 @@ the extension unpacked in Chrome and opening a `.md` file.
 
 ## Architecture
 
-All logic lives in `content.js`, a single IIFE injected as a content script
+The logic is split across two files, both injected as content scripts
 matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
-`manifest.json`). It runs once per page load, in this sequence:
+`manifest.json`):
+
+- `viewer.js` — the reusable renderer, exposed as a `MarkdownViewer`
+  global (or `module.exports` under Node). `MarkdownViewer.parse(raw)`
+  covers step 3 and needs only `marked` + `hljs`, so it also runs at build
+  time in Node; `MarkdownViewer.enhance(article, { dark })` covers steps 4
+  and 6 plus the hash scroll, and needs a DOM with the article attached.
+  It has no extension-specific code (no `chrome.*`, no URL checks), so
+  other projects can consume it — e.g. the `hal-9000` repo's GitLab Pages
+  build clones this repo and pre-renders its docs with `parse()`, then
+  calls `enhance()` in the browser. Keep that API stable.
+- `content.js` — the extension glue: a single IIFE that runs once per page
+  load and calls into `viewer.js`, in this sequence:
 
 1. **Guard** — re-checks the URL extension and a
    `document.documentElement.dataset.markdownViewer` flag so it never
@@ -37,16 +49,16 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    plaintext rendering of the file and only works on *raw* markdown text —
    pre-rendered HTML or files served as a download
    (`Content-Disposition: attachment`) are never intercepted.
-3. **Parse + highlight** — `marked` (GFM mode) converts markdown to HTML;
+3. **Parse + highlight** (`parse()`) — `marked` (GFM mode) converts markdown to HTML;
    its `highlight()` callback delegates fenced code blocks to `hljs`
    (except `mermaid` blocks, which are passed through as escaped text).
-4. **Post-process** — `wrapH2Sections()` groups each `<h2>` and its
+4. **Post-process** (`enhance()`, after step 5) — `wrapH2Sections()` groups each `<h2>` and its
    following siblings into a `<section class="md-h2-section">` (content
    before the first `<h2>` is left alone), and
    `makeH2SectionsCollapsible()` wires a click handler on each `<h2>` to
    toggle a `.collapsed` class on its section — this is what
-   `markdown.css` uses to hide/show section bodies. After the article is
-   attached, `addCollapseAllToggle()` adds a fixed top-right
+   `markdown.css` uses to hide/show section bodies. `addCollapseAllToggle()`
+   then adds a fixed top-right
    `button.md-collapse-all` that collapses all sections (or expands them
    all when every one is already collapsed).
 5. **Rebuild the document** — `<head>` is cleared and repopulated with a
@@ -56,7 +68,7 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    `article.markdown-body` containing the rendered HTML. In-page anchor
    navigation (`location.hash`) is re-applied manually afterward since the
    DOM it pointed at no longer exists.
-6. **Render diagrams** — `renderMermaid()` replaces each
+6. **Render diagrams** (`enhance()`) — `renderMermaid()` replaces each
    `pre > code.language-mermaid` with a `div.mermaid` and calls
    `mermaid.run()` using mermaid's `base` theme, with `themeVariables`
    built by `mermaidThemeVariables()` from the `--md-*` tokens in
