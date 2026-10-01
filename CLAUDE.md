@@ -58,6 +58,11 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
 3. **Parse + highlight** (`parse()`) — `marked` (GFM mode) converts markdown to HTML;
    its `highlight()` callback delegates fenced code blocks to `hljs`
    (except `mermaid` blocks, which are passed through as escaped text).
+   Between lexing and rendering, `linkTickets()` turns Jira keys
+   (`FLYW-123`, `PLT-…`, etc. — see `DEFAULT_TICKET_LINKS`) in plain inline
+   text into `a.md-ticket-link` links to the ticket; code, existing links
+   and raw `<a>` contents are skipped. `parse(raw, { ticketLinks })`
+   overrides the base URL/prefixes, or `null` disables it.
 4. **Post-process** (`enhance()`, after step 5) — `wrapH2Sections()` groups each `<h2>` and its
    following siblings into a `<section class="md-h2-section">` (content
    before the first `<h2>` is left alone), and

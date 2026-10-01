@@ -40,8 +40,62 @@
     },
   };
 
-  function parse(raw) {
-    return marked.parse(raw, markedOptions);
+  // Jira ticket keys ("FLYW-123") found in plain text are linked to the
+  // ticket. Override per call via parse(raw, { ticketLinks }), or pass
+  // ticketLinks: null to turn it off.
+  const DEFAULT_TICKET_LINKS = {
+    baseUrl: "https://flywheelio.atlassian.net/browse/",
+    prefixes: ["FLYW", "PLT", "VDS", "PS", "APPSEC", "FR", "OBJ", "CEN"],
+  };
+
+  //   parse(raw)                     -> HTML string
+  //   parse(raw, { ticketLinks })    -> same, with custom (or null: no)
+  //                                     ticket linking
+  function parse(raw, { ticketLinks = DEFAULT_TICKET_LINKS } = {}) {
+    if (!ticketLinks) return marked.parse(raw, markedOptions);
+    const options = Object.assign({}, marked.defaults, markedOptions);
+    const tokens = marked.lexer(raw, options);
+    linkTickets(tokens, ticketLinks);
+    return marked.parser(tokens, options);
+  }
+
+  // Turn ticket keys in inline text tokens into links, in place. Code spans
+  // and blocks aren't text tokens, so they're never touched; link labels
+  // (markdown links, autolinked URLs) and text inside raw <a>...</a> are
+  // skipped so links never nest. Keys must stand alone: "XPS-1" or
+  // "FLYW-1a" don't match.
+  function linkTickets(tokens, { baseUrl, prefixes }) {
+    const pattern = new RegExp(`(?<![\\w-])(?:${prefixes.join("|")})-\\d+(?!\\w)`, "gi");
+    let anchorDepth = 0;
+    const walk = (list) => {
+      for (const token of list) {
+        if (token.type === "html") {
+          if (/^<a[\s>]/i.test(token.text)) anchorDepth++;
+          else if (/^<\/a\s*>/i.test(token.text)) anchorDepth = Math.max(0, anchorDepth - 1);
+          continue;
+        }
+        if (token.type === "link") continue;
+        if (token.type === "text" && !token.tokens) {
+          // Inline text is already HTML-escaped by marked, and keys are
+          // only letters, digits and "-", so they're safe to wrap as-is.
+          if (anchorDepth) continue;
+          const linked = token.text.replace(
+            pattern,
+            (key) => `<a class="md-ticket-link" href="${baseUrl}${key.toUpperCase()}">${key}</a>`
+          );
+          if (linked !== token.text) {
+            token.type = "html";
+            token.text = linked;
+          }
+          continue;
+        }
+        if (token.tokens) walk(token.tokens);
+        if (token.items) walk(token.items);
+        if (token.header) token.header.forEach((cell) => walk(cell.tokens));
+        if (token.rows) token.rows.forEach((row) => row.forEach((cell) => walk(cell.tokens)));
+      }
+    };
+    walk(tokens);
   }
 
   // Group each <h2> and everything up to the next <h2> into a <section>,

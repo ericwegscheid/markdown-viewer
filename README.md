@@ -12,6 +12,7 @@ When you open a URL whose path ends in `.md`, `.markdown`, `.mkd`, or
 - parses the raw markdown with [marked](https://marked.js.org/) (GitHub-flavored),
 - syntax-highlights fenced code blocks with [highlight.js](https://highlightjs.org/),
 - renders ` ```mermaid ` fenced blocks as diagrams with [Mermaid](https://mermaid.js.org/),
+- links Jira ticket keys (`FLYW-123`, `PLT-45`, …) to the ticket,
 - replaces the raw text with a clean, GitHub-like layout that follows your
   OS light/dark color scheme.
 
@@ -57,8 +58,10 @@ directly (e.g. `hal-9000` pre-renders its docs site with it):
   them: `script` (the renderer), `parser` (only needed to call `parse()`
   in the browser, loaded before `script`), `mermaid` (only needed on pages
   with diagrams), `stylesheet`, and `codeThemes.light` / `codeThemes.dark`.
-- **API:** `MarkdownViewer.parse(raw)` returns HTML (also works under
-  Node); `MarkdownViewer.enhance(article, { dark, storageKey })` adds
+- **API:** `MarkdownViewer.parse(raw, { ticketLinks })` returns HTML
+  (also works under Node), with Jira ticket keys like `FLYW-123` linked to
+  the ticket (`ticketLinks: { baseUrl, prefixes }` to customize, `null` to
+  disable); `MarkdownViewer.enhance(article, { dark, storageKey })` adds
   collapsible sections, clickable task-list checkboxes with per-item
   comments, and diagrams. Checkbox state and comments are saved in
   `localStorage` (comments under `<storageKey>:comments`), one entry per
