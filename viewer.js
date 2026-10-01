@@ -3,7 +3,8 @@
 //
 //   MarkdownViewer.parse(raw)             -> HTML string (marked + hljs)
 //   MarkdownViewer.enhance(article, opts) -> collapsible h2 sections, the
-//                                            collapse-all toggle and mermaid
+//                                            collapse-all toggle, clickable
+//                                            task-list checkboxes and mermaid
 //                                            diagrams on an attached article
 //
 // parse() needs only marked and hljs, so it also runs under Node
@@ -100,6 +101,94 @@
 
     update();
     document.body.appendChild(button);
+  }
+
+  // Replace marked's disabled task-list <input type="checkbox"> with a
+  // clickable button.md-task-check (icon-swapping checkbox, same approach as
+  // work-tab's .mentions-check-btn), and wrap the item's own text in a
+  // span.md-task-text so the checked strikethrough doesn't bleed into nested
+  // lists. Clicking the checkbox or the text (outside links) toggles it.
+  //
+  // Toggled state persists in localStorage under storageKey (null disables
+  // it). Only items that differ from the markdown source are stored, keyed
+  // by their text plus an occurrence count for duplicates, so editing other
+  // lines of the file doesn't shift which items are checked.
+  function makeTaskListsToggleable(container, storageKey) {
+    const overrides = loadTaskOverrides(storageKey);
+    const seen = new Map();
+
+    const inputs = container.querySelectorAll(
+      "li > input[type=checkbox], li > p:first-child > input[type=checkbox]"
+    );
+    for (const input of inputs) {
+      const item = input.closest("li");
+      item.classList.add("md-task-item");
+
+      const check = document.createElement("button");
+      check.type = "button";
+      check.className = "md-task-check";
+      check.setAttribute("role", "checkbox");
+      check.setAttribute("aria-label", "Toggle item");
+
+      // Everything after the checkbox up to the first block element (a
+      // nested list, or the next paragraph in a loose list item).
+      const text = document.createElement("span");
+      text.className = "md-task-text";
+      while (input.nextSibling && !/^(UL|OL|P|PRE|BLOCKQUOTE|TABLE|DIV)$/.test(input.nextSibling.nodeName)) {
+        text.appendChild(input.nextSibling);
+      }
+
+      const label = text.textContent.trim().replace(/\s+/g, " ");
+      const count = (seen.get(label) || 0) + 1;
+      seen.set(label, count);
+      const id = count > 1 ? `${label}#${count}` : label;
+      const sourceChecked = input.checked;
+
+      const setChecked = (checked) => {
+        item.classList.toggle("checked", checked);
+        check.setAttribute("aria-checked", String(checked));
+      };
+      setChecked(id in overrides ? overrides[id] : sourceChecked);
+
+      const toggle = () => {
+        const checked = !item.classList.contains("checked");
+        setChecked(checked);
+        if (checked === sourceChecked) delete overrides[id];
+        else overrides[id] = checked;
+        saveTaskOverrides(storageKey, overrides);
+      };
+      check.addEventListener("click", toggle);
+      text.addEventListener("click", (event) => {
+        if (event.target.closest("a")) return;
+        toggle();
+      });
+
+      input.replaceWith(check, text);
+    }
+  }
+
+  // localStorage can be missing or throw (private windows, blocked site
+  // data, sandboxed iframes); task state then just isn't persisted.
+  function loadTaskOverrides(storageKey) {
+    if (!storageKey) return {};
+    try {
+      return JSON.parse(localStorage.getItem(storageKey)) || {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function saveTaskOverrides(storageKey, overrides) {
+    if (!storageKey) return;
+    try {
+      if (Object.keys(overrides).length) {
+        localStorage.setItem(storageKey, JSON.stringify(overrides));
+      } else {
+        localStorage.removeItem(storageKey);
+      }
+    } catch (_) {
+      // Ignore; see loadTaskOverrides.
+    }
   }
 
   // Build mermaid's "base" theme from the --md-* palette tokens defined in
@@ -222,6 +311,10 @@
   }
 
   // Scroll to location.hash, for pages whose DOM was built after load.
+  function defaultStorageKey() {
+    return `markdown-viewer:tasks:${location.pathname}`;
+  }
+
   function scrollToHash() {
     if (!location.hash) return;
     const id = decodeURIComponent(location.hash.slice(1));
@@ -232,10 +325,18 @@
   // Post-process a rendered article that is already attached to the
   // document. The hash scroll is re-applied once diagrams finish rendering,
   // since they shift the layout. Resolves when diagrams are done.
-  function enhance(article, { dark = false } = {}) {
+  //
+  // Options:
+  //   dark       - use the dark mermaid palette
+  //   storageKey - localStorage key for task-list checkbox state; defaults
+  //                to one key per page path (localStorage itself is already
+  //                scoped per origin). Pass a shared string to share state
+  //                across pages, or null to disable persistence.
+  function enhance(article, { dark = false, storageKey = defaultStorageKey() } = {}) {
     wrapH2Sections(article);
     makeH2SectionsCollapsible(article);
     addCollapseAllToggle(article);
+    makeTaskListsToggleable(article, storageKey);
     scrollToHash();
     return renderMermaid(article, dark).then(scrollToHash);
   }

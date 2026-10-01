@@ -60,7 +60,17 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    `markdown.css` uses to hide/show section bodies. `addCollapseAllToggle()`
    then adds a fixed top-right
    `button.md-collapse-all` that collapses all sections (or expands them
-   all when every one is already collapsed).
+   all when every one is already collapsed). `makeTaskListsToggleable()`
+   replaces marked's disabled task-list checkboxes with clickable
+   `button.md-task-check` toggles (styled after work-tab's
+   `.mentions-check-btn`) that strike through the item's
+   `span.md-task-text` when checked. Toggled state persists in
+   `localStorage` (not `chrome.storage`, so it works outside the
+   extension) under `enhance()`'s `storageKey` option — by default
+   `markdown-viewer:tasks:<pathname>`, i.e. per file; pass a shared string
+   for per-domain state or `null` to disable. Only items differing from the
+   markdown source are stored, keyed by item text (plus `#n` for
+   duplicates).
 5. **Rebuild the document** — `<head>` is cleared and repopulated with a
    charset meta tag and a `<link>` to whichever hljs theme
    (`github-dark.min.css` / `github-light.min.css`) matches

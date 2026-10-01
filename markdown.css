@@ -15,6 +15,7 @@
   --md-quote-fg: #8793b3; /* --normal-white */
   --md-mark-bg: #d7d75f; /* --bright-yellow */
   --md-mark-fg: #0f0f0f; /* fixed dark text so mark stays legible on --md-mark-bg in both themes */
+  --md-success: #00ff87; /* --status-success / --bright-green */
 
   /* Accent hues — not used by this file directly; content.js reads them to
      build the mermaid diagram theme. */
@@ -207,9 +208,76 @@ body.markdown-viewer-body {
 
 .markdown-body li + li { margin-top: 0.25em; }
 
-.markdown-body li > input[type="checkbox"] {
-  margin: 0 0.4em 0.25em -1.4em;
-  vertical-align: middle;
+/* Task-list items (see viewer.js's makeTaskListsToggleable). The checkbox
+   is ported from work-tab's .mentions-check-btn (pages/sprints/styles.css):
+   an icon-swapping button recolored via mask-image, toggling between
+   gf-check-box-outline-blank.svg and gf-check-box.svg (inlined as data
+   URIs so the stylesheet works outside the extension too). */
+.markdown-body li.md-task-item {
+  list-style: none;
+}
+
+.markdown-body .md-task-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 0 0.3em 0 -1.6em;
+  padding: 0;
+  vertical-align: -0.3em;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.markdown-body .md-task-check:hover {
+  opacity: 1;
+  background: var(--md-code-bg); /* --brighter */
+}
+
+.markdown-body .md-task-check:focus-visible {
+  outline: 2px solid var(--md-link);
+  outline-offset: 1px;
+}
+
+.markdown-body .md-task-check::before {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--md-fg);
+  -webkit-mask: no-repeat center / contain;
+  mask: no-repeat center / contain;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Z'/%3E%3C/svg%3E");
+}
+
+.markdown-body .md-task-item.checked > .md-task-check,
+.markdown-body .md-task-item.checked > p > .md-task-check {
+  opacity: 1;
+}
+
+.markdown-body .md-task-item.checked > .md-task-check::before,
+.markdown-body .md-task-item.checked > p > .md-task-check::before {
+  background-color: var(--md-success);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='m419-321 289-289-43-43-246 246-119-119-43 43 162 162ZM180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Zm0-600v600-600Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='m419-321 289-289-43-43-246 246-119-119-43 43 162 162ZM180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Zm0-600v600-600Z'/%3E%3C/svg%3E");
+}
+
+.markdown-body .md-task-text {
+  cursor: pointer;
+}
+
+/* Only the item's own text (not nested lists) reads as "done" — same
+   muted+strikethrough treatment as work-tab's checked mentions. */
+.markdown-body .md-task-item.checked > .md-task-text,
+.markdown-body .md-task-item.checked > p > .md-task-text {
+  opacity: 0.5;
+  text-decoration: line-through;
 }
 
 .markdown-body code,
