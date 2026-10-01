@@ -4,7 +4,7 @@
 //   MarkdownViewer.parse(raw)             -> HTML string (marked + hljs)
 //   MarkdownViewer.enhance(article, opts) -> collapsible h2 sections, the
 //                                            collapse-all toggle, clickable
-//                                            task-list checkboxes and mermaid
+//                                            task-list checkboxes/comments and mermaid
 //                                            diagrams on an attached article
 //
 // parse() needs only marked and hljs, so it also runs under Node
@@ -112,9 +112,13 @@
   // Toggled state persists in localStorage under storageKey (null disables
   // it). Only items that differ from the markdown source are stored, keyed
   // by their text plus an occurrence count for duplicates, so editing other
-  // lines of the file doesn't shift which items are checked.
+  // lines of the file doesn't shift which items are checked. Each item also
+  // gets a comment toggle (see addTaskComment), stored the same way under
+  // "<storageKey>:comments".
   function makeTaskListsToggleable(container, storageKey) {
-    const overrides = loadTaskOverrides(storageKey);
+    const overrides = loadStore(storageKey);
+    const commentsKey = storageKey && `${storageKey}:comments`;
+    const comments = loadStore(commentsKey);
     const seen = new Map();
 
     const inputs = container.querySelectorAll(
@@ -155,7 +159,7 @@
         setChecked(checked);
         if (checked === sourceChecked) delete overrides[id];
         else overrides[id] = checked;
-        saveTaskOverrides(storageKey, overrides);
+        saveStore(storageKey, overrides);
       };
       check.addEventListener("click", toggle);
       text.addEventListener("click", (event) => {
@@ -164,30 +168,74 @@
       });
 
       input.replaceWith(check, text);
+      addTaskComment(item, text, (value) => {
+        if (value.trim()) comments[id] = value;
+        else delete comments[id];
+        saveStore(commentsKey, comments);
+      }, comments[id] || "");
     }
   }
 
-  // localStorage can be missing or throw (private windows, blocked site
-  // data, sandboxed iframes); task state then just isn't persisted.
-  function loadTaskOverrides(storageKey) {
-    if (!storageKey) return {};
+  // Comment button at the end of a task item's line (shown on hover, see
+  // markdown.css) that shows/hides a textarea right below that line, above
+  // any nested list. The button is marked .has-comment (blue) while the
+  // textarea holds non-blank text. save(value) is called on every edit.
+  function addTaskComment(item, text, save, initial) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "md-task-comment-btn";
+    button.setAttribute("aria-label", "Toggle comment");
+    button.setAttribute("aria-expanded", "false");
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "md-task-comment";
+    textarea.rows = 3;
+    textarea.placeholder = "Add a comment\u2026";
+    textarea.setAttribute("aria-label", "Comment");
+    textarea.value = initial;
+    textarea.hidden = true;
+
+    const update = () => button.classList.toggle("has-comment", !!textarea.value.trim());
+    update();
+
+    button.addEventListener("click", () => {
+      textarea.hidden = !textarea.hidden;
+      button.setAttribute("aria-expanded", String(!textarea.hidden));
+      if (!textarea.hidden) textarea.focus();
+    });
+    textarea.addEventListener("input", () => {
+      update();
+      save(textarea.value);
+    });
+
+    text.after(button);
+    // In a loose list item the line is a <p>; the textarea goes after it.
+    const line = text.parentElement === item ? button : text.parentElement;
+    line.after(textarea);
+  }
+
+  // JSON map in localStorage under key (null/empty disables it). Storage can
+  // be missing or throw (private windows, blocked site data, sandboxed
+  // iframes); state then just isn't persisted.
+  function loadStore(key) {
+    if (!key) return {};
     try {
-      return JSON.parse(localStorage.getItem(storageKey)) || {};
+      return JSON.parse(localStorage.getItem(key)) || {};
     } catch (_) {
       return {};
     }
   }
 
-  function saveTaskOverrides(storageKey, overrides) {
-    if (!storageKey) return;
+  function saveStore(key, map) {
+    if (!key) return;
     try {
-      if (Object.keys(overrides).length) {
-        localStorage.setItem(storageKey, JSON.stringify(overrides));
+      if (Object.keys(map).length) {
+        localStorage.setItem(key, JSON.stringify(map));
       } else {
-        localStorage.removeItem(storageKey);
+        localStorage.removeItem(key);
       }
     } catch (_) {
-      // Ignore; see loadTaskOverrides.
+      // Ignore; see loadStore.
     }
   }
 
@@ -328,10 +376,11 @@
   //
   // Options:
   //   dark       - use the dark mermaid palette
-  //   storageKey - localStorage key for task-list checkbox state; defaults
-  //                to one key per page path (localStorage itself is already
-  //                scoped per origin). Pass a shared string to share state
-  //                across pages, or null to disable persistence.
+  //   storageKey - localStorage key for task-list checkbox state (comments
+  //                go under "<storageKey>:comments"); defaults to one key
+  //                per page path (localStorage itself is already scoped per
+  //                origin). Pass a shared string to share state across
+  //                pages, or null to disable persistence.
   function enhance(article, { dark = false, storageKey = defaultStorageKey() } = {}) {
     wrapH2Sections(article);
     makeH2SectionsCollapsible(article);

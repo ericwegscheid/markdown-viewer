@@ -272,6 +272,89 @@ body.markdown-viewer-body {
   cursor: pointer;
 }
 
+/* Per-item comment toggle (see viewer.js's addTaskComment), at the end of
+   the item's line. Hidden until that line's item is hovered (not a nested
+   item's), but stays visible while it holds a comment or its textarea is
+   open. Gray when empty, blue (.has-comment) when it has text. The icon is
+   Material Symbols' "comment", inlined like the checkbox icons above. */
+.markdown-body .md-task-comment-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 0.4em;
+  padding: 0;
+  vertical-align: -0.3em;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  visibility: hidden;
+}
+
+.markdown-body .md-task-item:hover:not(:has(.md-task-item:hover)) > .md-task-comment-btn,
+.markdown-body .md-task-item:hover:not(:has(.md-task-item:hover)) > p > .md-task-comment-btn,
+.markdown-body .md-task-comment-btn.has-comment,
+.markdown-body .md-task-comment-btn[aria-expanded="true"],
+.markdown-body .md-task-comment-btn:focus-visible {
+  visibility: visible;
+}
+
+.markdown-body .md-task-comment-btn:hover {
+  background: var(--md-code-bg); /* --brighter */
+}
+
+.markdown-body .md-task-comment-btn:focus-visible {
+  outline: 2px solid var(--md-link);
+  outline-offset: 1px;
+}
+
+.markdown-body .md-task-comment-btn::before {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--md-muted);
+  -webkit-mask: no-repeat center / contain;
+  mask: no-repeat center / contain;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M240-400h480v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM880-80 720-240H160q-33 0-56.5-23.5T80-320v-480q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v720ZM160-320h594l46 45v-525H160v480Zm0 0v-480 480Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M240-400h480v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM880-80 720-240H160q-33 0-56.5-23.5T80-320v-480q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v720ZM160-320h594l46 45v-525H160v480Zm0 0v-480 480Z'/%3E%3C/svg%3E");
+}
+
+.markdown-body .md-task-comment-btn.has-comment::before {
+  background-color: var(--md-link); /* --bright-blue */
+}
+
+.markdown-body .md-task-comment {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 40em;
+  margin: 0.4em 0;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 0.9em;
+  color: var(--md-fg);
+  background: var(--md-code-block-bg);
+  border: 1px solid var(--md-border);
+  border-radius: 6px;
+  resize: vertical;
+}
+
+.markdown-body .md-task-comment[hidden] {
+  display: none;
+}
+
+.markdown-body .md-task-comment:focus {
+  outline: none;
+  border-color: var(--md-link);
+}
+
+@media print {
+  .markdown-body .md-task-comment-btn:not(.has-comment) { display: none; }
+}
+
 /* Only the item's own text (not nested lists) reads as "done" — same
    muted+strikethrough treatment as work-tab's checked mentions. */
 .markdown-body .md-task-item.checked > .md-task-text,

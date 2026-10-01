@@ -59,7 +59,8 @@ directly (e.g. `hal-9000` pre-renders its docs site with it):
   with diagrams), `stylesheet`, and `codeThemes.light` / `codeThemes.dark`.
 - **API:** `MarkdownViewer.parse(raw)` returns HTML (also works under
   Node); `MarkdownViewer.enhance(article, { dark, storageKey })` adds
-  collapsible sections, clickable task-list checkboxes and diagrams.
-  Checkbox state is saved in `localStorage`, one entry per page path by
-  default; pass `storageKey` to choose your own key (e.g. per document in a
+  collapsible sections, clickable task-list checkboxes with per-item
+  comments, and diagrams. Checkbox state and comments are saved in
+  `localStorage` (comments under `<storageKey>:comments`), one entry per
+  page path by default; pass `storageKey` to choose your own key (e.g. per document in a
   hash-routed SPA) or `null` to turn saving off.
