@@ -176,7 +176,7 @@
     }
   }
 
-  // Comment button at the end of a task item's line (shown on hover, see
+  // Comment button just left of a task item's checkbox (shown on hover, see
   // markdown.css) that shows/hides a textarea right below that line, above
   // any nested list. The button is marked .has-comment (blue) while the
   // textarea holds non-blank text. save(value) is called on every edit.
@@ -208,9 +208,9 @@
       save(textarea.value);
     });
 
-    text.after(button);
+    text.previousElementSibling.before(button);
     // In a loose list item the line is a <p>; the textarea goes after it.
-    const line = text.parentElement === item ? button : text.parentElement;
+    const line = text.parentElement === item ? text : text.parentElement;
     line.after(textarea);
   }
 

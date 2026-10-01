@@ -214,6 +214,7 @@ body.markdown-viewer-body {
    gf-check-box-outline-blank.svg and gf-check-box.svg (inlined as data
    URIs so the stylesheet works outside the extension too). */
 .markdown-body li.md-task-item {
+  position: relative; /* anchors .md-task-comment-btn */
   list-style: none;
 }
 
@@ -272,8 +273,8 @@ body.markdown-viewer-body {
   cursor: pointer;
 }
 
-/* Per-item comment toggle (see viewer.js's addTaskComment), at the end of
-   the item's line. Hidden until that line's item is hovered (not a nested
+/* Per-item comment toggle (see viewer.js's addTaskComment), in the list
+   gutter just left of the checkbox. Hidden until that line's item is hovered (not a nested
    item's), but stays visible while it holds a comment or its textarea is
    open. Gray when empty, blue (.has-comment) when it has text. The icon is
    Material Symbols' "comment", inlined like the checkbox icons above. */
@@ -281,11 +282,14 @@ body.markdown-viewer-body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: absolute;
+  /* Checkbox starts 1.6em into the gutter and is 20px wide; sit 2px left of
+     it, lined up with the checkbox on the first line (line-height 1.6). */
+  left: calc(-1.6em - 22px);
+  top: calc(0.8em - 8px);
   width: 20px;
   height: 20px;
-  margin-left: 0.4em;
   padding: 0;
-  vertical-align: -0.3em;
   border: none;
   border-radius: 4px;
   background: transparent;

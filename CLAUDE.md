@@ -76,8 +76,8 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    `markdown-viewer:tasks:<pathname>`, i.e. per file; pass a shared string
    for per-domain state or `null` to disable. Only items differing from the
    markdown source are stored, keyed by item text (plus `#n` for
-   duplicates). Each task item also gets a hover-revealed comment button at
-   the end of its line (`addTaskComment()`) that shows/hides a
+   duplicates). Each task item also gets a hover-revealed comment button just
+   left of its checkbox (`addTaskComment()`) that shows/hides a
    `textarea.md-task-comment` below that line; non-blank comments are
    stored the same way under `<storageKey>:comments`, and mark the button
    `.has-comment` (blue instead of gray).
