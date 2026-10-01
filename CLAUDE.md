@@ -74,18 +74,21 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    all when every one is already collapsed). `makeTaskListsToggleable()`
    replaces marked's disabled task-list checkboxes with clickable
    `button.md-task-check` toggles (styled after work-tab's
-   `.mentions-check-btn`) that strike through the item's
-   `span.md-task-text` when checked. Toggled state persists in
+   `.mentions-check-btn`) that dim the item's `span.md-task-text` when
+   checked (no strikethrough); only the checkbox itself toggles it.
+   Toggled state persists in
    `localStorage` (not `chrome.storage`, so it works outside the
    extension) under `enhance()`'s `storageKey` option — by default
    `markdown-viewer:tasks:<pathname>`, i.e. per file; pass a shared string
    for per-domain state or `null` to disable. Only items differing from the
    markdown source are stored, keyed by item text (plus `#n` for
-   duplicates). Each task item also gets a hover-revealed comment button just
-   left of its checkbox (`addTaskComment()`) that shows/hides a
-   `textarea.md-task-comment` below that line; non-blank comments are
-   stored the same way under `<storageKey>:comments`, and mark the button
-   `.has-comment` (blue instead of gray).
+   duplicates). Clicking a task item's text (outside links) shows/hides a
+   `textarea.md-task-comment` below that line (`addTaskComment()`);
+   non-blank comments are stored the same way under
+   `<storageKey>:comments`. A non-clickable `span.md-task-comment-icon`
+   just left of the checkbox indicates it: shown on hover, while open
+   (`.open`), or when the item has a comment (`.has-comment`, blue instead
+   of gray).
 5. **Rebuild the document** — `<head>` is cleared and repopulated with a
    charset meta tag and a `<link>` to whichever hljs theme
    (`github-dark.min.css` / `github-light.min.css`) matches

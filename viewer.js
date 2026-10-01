@@ -160,8 +160,9 @@
   // Replace marked's disabled task-list <input type="checkbox"> with a
   // clickable button.md-task-check (icon-swapping checkbox, same approach as
   // work-tab's .mentions-check-btn), and wrap the item's own text in a
-  // span.md-task-text so the checked strikethrough doesn't bleed into nested
-  // lists. Clicking the checkbox or the text (outside links) toggles it.
+  // span.md-task-text so the checked fade doesn't bleed into nested lists.
+  // Only clicking the checkbox toggles it; clicking the text toggles the
+  // item's comment (see addTaskComment).
   //
   // Toggled state persists in localStorage under storageKey (null disables
   // it). Only items that differ from the markdown source are stored, keyed
@@ -216,10 +217,6 @@
         saveStore(storageKey, overrides);
       };
       check.addEventListener("click", toggle);
-      text.addEventListener("click", (event) => {
-        if (event.target.closest("a")) return;
-        toggle();
-      });
 
       input.replaceWith(check, text);
       addTaskComment(item, text, (value) => {
@@ -230,16 +227,15 @@
     }
   }
 
-  // Comment button just left of a task item's checkbox (shown on hover, see
-  // markdown.css) that shows/hides a textarea right below that line, above
-  // any nested list. The button is marked .has-comment (blue) while the
-  // textarea holds non-blank text. save(value) is called on every edit.
+  // Clicking a task item's text (outside links) shows/hides a textarea right
+  // below that line, above any nested list. A comment icon just left of the
+  // checkbox (shown on hover, see markdown.css) is only an indicator: it's
+  // marked .open while the textarea is shown and .has-comment (blue) while
+  // it holds non-blank text. save(value) is called on every edit.
   function addTaskComment(item, text, save, initial) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "md-task-comment-btn";
-    button.setAttribute("aria-label", "Toggle comment");
-    button.setAttribute("aria-expanded", "false");
+    const icon = document.createElement("span");
+    icon.className = "md-task-comment-icon";
+    icon.setAttribute("aria-hidden", "true");
 
     const textarea = document.createElement("textarea");
     textarea.className = "md-task-comment";
@@ -249,12 +245,13 @@
     textarea.value = initial;
     textarea.hidden = true;
 
-    const update = () => button.classList.toggle("has-comment", !!textarea.value.trim());
+    const update = () => icon.classList.toggle("has-comment", !!textarea.value.trim());
     update();
 
-    button.addEventListener("click", () => {
+    text.addEventListener("click", (event) => {
+      if (event.target.closest("a")) return;
       textarea.hidden = !textarea.hidden;
-      button.setAttribute("aria-expanded", String(!textarea.hidden));
+      icon.classList.toggle("open", !textarea.hidden);
       if (!textarea.hidden) textarea.focus();
     });
     textarea.addEventListener("input", () => {
@@ -262,7 +259,7 @@
       save(textarea.value);
     });
 
-    text.previousElementSibling.before(button);
+    text.previousElementSibling.before(icon);
     // In a loose list item the line is a <p>; the textarea goes after it.
     const line = text.parentElement === item ? text : text.parentElement;
     line.after(textarea);
