@@ -37,6 +37,7 @@ Open any `.md` file (e.g. drag one into Chrome) and it renders automatically.
 | `highlight.min.js` | Syntax highlighter (v11.9.0) |
 | `mermaid.min.js` | Diagram renderer for ` ```mermaid ` blocks (v11.17.2) |
 | `github-light.min.css` / `github-dark.min.css` | hljs themes, picked at runtime |
+| `viewer-assets.json` | Which of these files other projects need to load the renderer |
 
 ## Notes
 
@@ -44,3 +45,21 @@ Open any `.md` file (e.g. drag one into Chrome) and it renders automatically.
   displays, so it works offline and needs no network access.
 - Files served as a download (`Content-Disposition: attachment`) or as
   pre-rendered HTML won't be intercepted — it targets raw markdown text.
+
+## Using the renderer in other projects
+
+`viewer.js` has no extension-specific code, so other projects can use it
+directly (e.g. `hal-9000` pre-renders its docs site with it):
+
+- **Pin a release.** Check out a tag (`git clone --branch v1.0.0 ...`)
+  rather than `master`, and bump it deliberately.
+- **Read `viewer-assets.json`** for the file names instead of hardcoding
+  them: `script` (the renderer), `parser` (only needed to call `parse()`
+  in the browser, loaded before `script`), `mermaid` (only needed on pages
+  with diagrams), `stylesheet`, and `codeThemes.light` / `codeThemes.dark`.
+- **API:** `MarkdownViewer.parse(raw)` returns HTML (also works under
+  Node); `MarkdownViewer.enhance(article, { dark, storageKey })` adds
+  collapsible sections, clickable task-list checkboxes and diagrams.
+  Checkbox state is saved in `localStorage`, one entry per page path by
+  default; pass `storageKey` to choose your own key (e.g. per document in a
+  hash-routed SPA) or `null` to turn saving off.

@@ -1,0 +1,10 @@
+{
+  "script": "viewer.js",
+  "parser": ["marked.min.js", "highlight.min.js"],
+  "mermaid": "mermaid.min.js",
+  "stylesheet": "markdown.css",
+  "codeThemes": {
+    "light": "github-light.min.css",
+    "dark": "github-dark.min.css"
+  }
+}

@@ -31,12 +31,18 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
 - `viewer.js` — the reusable renderer, exposed as a `MarkdownViewer`
   global (or `module.exports` under Node). `MarkdownViewer.parse(raw)`
   covers step 3 and needs only `marked` + `hljs`, so it also runs at build
-  time in Node; `MarkdownViewer.enhance(article, { dark })` covers steps 4
+  time in Node; `MarkdownViewer.enhance(article, { dark, storageKey })` covers steps 4
   and 6 plus the hash scroll, and needs a DOM with the article attached.
   It has no extension-specific code (no `chrome.*`, no URL checks), so
   other projects can consume it — e.g. the `hal-9000` repo's GitLab Pages
   build clones this repo and pre-renders its docs with `parse()`, then
   calls `enhance()` in the browser. Keep that API stable.
+  Consumers find the files to load via `viewer-assets.json` (renderer
+  script, parser scripts, mermaid, stylesheet, light/dark hljs themes)
+  rather than hardcoding names — update it whenever one of those files is
+  renamed or added. Consumers pin release tags (`vX.Y.Z`, matching
+  `manifest.json`'s `version`), so breaking changes to the API or that
+  file need a major version bump.
 - `content.js` — the extension glue: a single IIFE that runs once per page
   load and calls into `viewer.js`, in this sequence:
 
