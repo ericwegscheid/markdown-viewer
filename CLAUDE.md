@@ -31,7 +31,7 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
 - `viewer.js` — the reusable renderer, exposed as a `MarkdownViewer`
   global (or `module.exports` under Node). `MarkdownViewer.parse(raw)`
   covers step 3 and needs only `marked` + `hljs`, so it also runs at build
-  time in Node; `MarkdownViewer.enhance(article, { dark, storageKey })` covers steps 4
+  time in Node; `MarkdownViewer.enhance(article, { dark, storageKey, taskUrl, taskSource })` covers steps 4
   and 6 plus the hash scroll, and needs a DOM with the article attached.
   It has no extension-specific code (no `chrome.*`, no URL checks), so
   other projects can consume it — e.g. the `hal-9000` repo's GitLab Pages
@@ -85,10 +85,17 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    duplicates). Clicking a task item's text (outside links) shows/hides a
    `textarea.md-task-comment` below that line (`addTaskComment()`);
    non-blank comments are stored the same way under
-   `<storageKey>:comments`. A non-clickable `span.md-task-comment-icon`
-   just left of the checkbox indicates it: shown on hover, while open
-   (`.open`), or when the item has a comment (`.has-comment`, blue instead
-   of gray).
+   `<storageKey>:comments`. A `button.md-task-comment-icon` just left of
+   the checkbox, always shown, toggles the same textarea (`aria-expanded`)
+   and turns blue instead of gray while the item has a comment
+   (`.has-comment`). Each item gets an anchor id (`taskAnchor()`:
+   `task-<slug of its text>`, `-2`… for repeats), and a
+   `button.md-task-copy` left of the comment button (`addTaskCopy()`)
+   copies a ready-to-paste AI prompt (`taskPrompt()`) built from the
+   document title, `taskSource`, the item's link (`taskUrl(id)`, default
+   page URL + `#id`), its heading path, status, text and comment. Lists
+   holding task items (`.md-task-list`) get 22px of extra indent for the
+   second gutter button.
 5. **Rebuild the document** — `<head>` is cleared and repopulated with a
    charset meta tag and a `<link>` to whichever hljs theme
    (`github-dark.min.css` / `github-light.min.css`) matches

@@ -66,4 +66,8 @@ directly (e.g. `hal-9000` pre-renders its docs site with it):
   comments, and diagrams. Checkbox state and comments are saved in
   `localStorage` (comments under `<storageKey>:comments`), one entry per
   page path by default; pass `storageKey` to choose your own key (e.g. per document in a
-  hash-routed SPA) or `null` to turn saving off.
+  hash-routed SPA) or `null` to turn saving off. Each task item also gets
+  an anchor id (`#task-<slug>`) and a copy button that puts the item, its
+  comment and its link on the clipboard as a ready-to-paste AI prompt;
+  pass `taskUrl: (id) => url` when readers reach the page under another
+  URL, and `taskSource` to name where the source file lives.

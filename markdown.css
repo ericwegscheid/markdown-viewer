@@ -214,8 +214,9 @@ body.markdown-viewer-body {
    gf-check-box-outline-blank.svg and gf-check-box.svg (inlined as data
    URIs so the stylesheet works outside the extension too). */
 .markdown-body li.md-task-item {
-  position: relative; /* anchors .md-task-comment-icon */
+  position: relative; /* anchors the gutter buttons */
   list-style: none;
+  scroll-margin-top: 3em; /* clear of .md-collapse-all when linked to */
 }
 
 .markdown-body .md-task-check {
@@ -273,35 +274,55 @@ body.markdown-viewer-body {
   cursor: pointer; /* toggles the item's comment textarea */
 }
 
-/* Per-item comment indicator (see viewer.js's addTaskComment), in the list
-   gutter just left of the checkbox. Not clickable — clicking the item's
-   text toggles the textarea. Hidden until that line's item is hovered (not
-   a nested item's), but stays visible while it holds a comment or its
-   textarea is open (.open). Gray when empty, blue (.has-comment) when it
-   has text. The icon is Material Symbols' "comment", inlined like the
-   checkbox icons above. */
-.markdown-body .md-task-comment-icon {
+/* Per-item buttons in the list gutter, left of the checkbox (see viewer.js's
+   addTaskComment and addTaskCopy), always shown: the comment button, which
+   toggles the item's textarea just like clicking the item's text, and left
+   of it the copy-as-prompt button. Lists holding task items get an extra
+   22px of indent to make room for the second button. Icons are Material
+   Symbols' "comment" and "content_copy" (and "check" for the copied
+   feedback), inlined like the checkbox icons above. */
+.markdown-body .md-task-list {
+  padding-left: calc(2em + 22px);
+}
+
+.markdown-body .md-task-comment-icon,
+.markdown-body .md-task-copy {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   position: absolute;
-  /* Checkbox starts 1.6em into the gutter and is 20px wide; sit 2px left of
-     it, lined up with the checkbox on the first line (line-height 1.6). */
+  /* Checkbox starts 1.6em into the gutter and is 20px wide; each button sits
+     2px left of its neighbor, lined up with the checkbox on the first line
+     (line-height 1.6). */
   left: calc(-1.6em - 22px);
   top: calc(0.8em - 8px);
   width: 20px;
   height: 20px;
-  visibility: hidden;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.markdown-body .md-task-item:hover:not(:has(.md-task-item:hover)) > .md-task-comment-icon,
-.markdown-body .md-task-item:hover:not(:has(.md-task-item:hover)) > p > .md-task-comment-icon,
-.markdown-body .md-task-comment-icon.has-comment,
-.markdown-body .md-task-comment-icon.open {
-  visibility: visible;
+.markdown-body .md-task-copy {
+  left: calc(-1.6em - 44px);
 }
 
-.markdown-body .md-task-comment-icon::before {
+.markdown-body .md-task-comment-icon:hover,
+.markdown-body .md-task-copy:hover {
+  background: var(--md-code-bg); /* --brighter */
+}
+
+.markdown-body .md-task-comment-icon:focus-visible,
+.markdown-body .md-task-copy:focus-visible {
+  outline: 2px solid var(--md-link);
+  outline-offset: 1px;
+}
+
+.markdown-body .md-task-comment-icon::before,
+.markdown-body .md-task-copy::before {
   content: "";
   display: block;
   width: 16px;
@@ -309,12 +330,40 @@ body.markdown-viewer-body {
   background-color: var(--md-muted);
   -webkit-mask: no-repeat center / contain;
   mask: no-repeat center / contain;
+}
+
+.markdown-body .md-task-comment-icon::before {
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M240-400h480v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM880-80 720-240H160q-33 0-56.5-23.5T80-320v-480q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v720ZM160-320h594l46 45v-525H160v480Zm0 0v-480 480Z'/%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M240-400h480v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM880-80 720-240H160q-33 0-56.5-23.5T80-320v-480q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v720ZM160-320h594l46 45v-525H160v480Zm0 0v-480 480Z'/%3E%3C/svg%3E");
 }
 
 .markdown-body .md-task-comment-icon.has-comment::before {
   background-color: var(--md-link); /* --bright-blue */
+}
+
+.markdown-body .md-task-copy::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z'/%3E%3C/svg%3E");
+}
+
+.markdown-body .md-task-copy:hover::before {
+  background-color: var(--md-success);
+}
+
+.markdown-body .md-task-copy.copied::before {
+  background-color: var(--md-success);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z'/%3E%3C/svg%3E");
+}
+
+/* A task item linked to by its anchor (see viewer.js's taskAnchor and
+   scrollToHash). */
+.markdown-body .md-task-item:target > .md-task-text,
+.markdown-body .md-task-item:target > p > .md-task-text,
+.markdown-body .md-task-item.md-target > .md-task-text,
+.markdown-body .md-task-item.md-target > p > .md-task-text {
+  background: var(--md-selection);
+  border-radius: 3px;
 }
 
 .markdown-body .md-task-comment {
@@ -343,7 +392,8 @@ body.markdown-viewer-body {
 }
 
 @media print {
-  .markdown-body .md-task-comment-icon:not(.has-comment) { display: none; }
+  .markdown-body .md-task-comment-icon:not(.has-comment),
+  .markdown-body .md-task-copy { display: none; }
 }
 
 /* Only the item's own text (not nested lists) reads as "done": dimmed,
