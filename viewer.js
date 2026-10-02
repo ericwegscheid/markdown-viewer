@@ -41,7 +41,7 @@
   };
 
   // Jira ticket keys ("FLYW-123") found in plain text are linked to the
-  // ticket. Override per call via parse(raw, { ticketLinks }), or pass
+  // ticket, opening in a new tab. Override per call via parse(raw, { ticketLinks }), or pass
   // ticketLinks: null to turn it off.
   const DEFAULT_TICKET_LINKS = {
     baseUrl: "https://flywheelio.atlassian.net/browse/",
@@ -81,7 +81,7 @@
           if (anchorDepth) continue;
           const linked = token.text.replace(
             pattern,
-            (key) => `<a class="md-ticket-link" href="${baseUrl}${key.toUpperCase()}">${key}</a>`
+            (key) => `<a class="md-ticket-link" href="${baseUrl}${key.toUpperCase()}" target="_blank" rel="noopener">${key}</a>`
           );
           if (linked !== token.text) {
             token.type = "html";
