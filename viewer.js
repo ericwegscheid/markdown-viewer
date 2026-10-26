@@ -2,7 +2,7 @@
 // anything else that wants the same output, e.g. a static site build.
 //
 //   MarkdownViewer.parse(raw)             -> HTML string (marked + hljs)
-//   MarkdownViewer.enhance(article, opts) -> collapsible h2 sections, the
+//   MarkdownViewer.enhance(article, opts) -> collapsible h2/h3 sections, the
 //                                            collapse-all toggle, clickable
 //                                            task-list checkboxes/comments and mermaid
 //                                            diagrams on an attached article
@@ -98,39 +98,49 @@
     walk(tokens);
   }
 
-  // Group each <h2> and everything up to the next <h2> into a <section>,
-  // so h2-based collapsible sections can be built on top of this structure.
-  // Content before the first <h2> is left untouched.
-  function wrapH2Sections(container) {
-    let section = null;
+  // Heading levels that get collapsible sections.
+  const SECTION_LEVELS = [2, 3];
+
+  // Group each <h2>/<h3> and everything up to the next heading of the same
+  // or a higher level into a <section class="md-section md-hN-section">,
+  // nesting h3 sections inside their h2 section, so collapsible sections
+  // can be built on top of this structure. Content before the first such
+  // heading is left untouched.
+  function wrapSections(container) {
+    const open = []; // enclosing { level, section }, outermost first
     for (const node of Array.from(container.children)) {
-      if (node.tagName === "H2") {
-        section = document.createElement("section");
-        section.className = "md-h2-section";
-        container.insertBefore(section, node);
+      const level = /^H[1-6]$/.test(node.tagName) ? Number(node.tagName[1]) : 0;
+      if (level) while (open.length && open[open.length - 1].level >= level) open.pop();
+      const parent = open.length ? open[open.length - 1].section : null;
+      if (SECTION_LEVELS.includes(level)) {
+        const section = document.createElement("section");
+        section.className = `md-section md-h${level}-section`;
+        if (parent) parent.appendChild(section);
+        else container.insertBefore(section, node);
         section.appendChild(node);
-      } else if (section) {
-        section.appendChild(node);
+        open.push({ level, section });
+      } else if (parent) {
+        parent.appendChild(node);
       }
     }
   }
 
-  // Clicking an h2 toggles the "collapsed" class on its enclosing
-  // .md-h2-section, hiding everything in that section but the heading.
-  function makeH2SectionsCollapsible(container) {
-    for (const h2 of container.querySelectorAll(".md-h2-section > h2")) {
-      h2.classList.add("md-h2-toggle");
-      h2.addEventListener("click", () => {
-        h2.parentElement.classList.toggle("collapsed");
+  // Clicking a section's heading toggles the "collapsed" class on its
+  // .md-section, hiding everything in that section but the heading.
+  function makeSectionsCollapsible(container) {
+    for (const heading of container.querySelectorAll(".md-section > h2, .md-section > h3")) {
+      heading.classList.add("md-section-toggle", `md-${heading.tagName.toLowerCase()}-toggle`);
+      heading.addEventListener("click", () => {
+        heading.parentElement.classList.toggle("collapsed");
       });
     }
   }
 
-  // Fixed top-right button that collapses every .md-h2-section, or expands
+  // Fixed top-right button that collapses every .md-section, or expands
   // them all once every section is already collapsed. Its label is kept in
   // sync when individual sections are toggled via their headings.
   function addCollapseAllToggle(container) {
-    const sections = container.querySelectorAll(".md-h2-section");
+    const sections = container.querySelectorAll(".md-section");
     if (!sections.length) return;
 
     const button = document.createElement("button");
@@ -548,15 +558,17 @@
   }
 
   // Scroll to location.hash, for pages whose DOM was built after load,
-  // expanding its section first if that's collapsed. The target is also
+  // expanding its enclosing sections first if they're collapsed (a
+  // heading's own section stays as it is). The target is also
   // marked .md-target, since :target doesn't match ids added after load.
   function scrollToHash() {
     if (!location.hash) return;
     const id = decodeURIComponent(location.hash.slice(1));
     const target = document.getElementById(id);
     if (!target) return;
-    const section = target.closest(".md-h2-section.collapsed");
-    if (section && !target.classList.contains("md-h2-toggle")) section.classList.remove("collapsed");
+    for (let s = target.closest(".md-section.collapsed"); s; s = s.parentElement.closest(".md-section.collapsed")) {
+      if (s.firstElementChild !== target) s.classList.remove("collapsed");
+    }
     target.classList.add("md-target");
     target.scrollIntoView();
   }
@@ -581,8 +593,8 @@
     article,
     { dark = false, storageKey = defaultStorageKey(), taskUrl = defaultTaskUrl, taskSource = "" } = {}
   ) {
-    wrapH2Sections(article);
-    makeH2SectionsCollapsible(article);
+    wrapSections(article);
+    makeSectionsCollapsible(article);
     addCollapseAllToggle(article);
     makeTaskListsToggleable(article, storageKey, { url: taskUrl, source: taskSource });
     scrollToHash();

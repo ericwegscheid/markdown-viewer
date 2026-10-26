@@ -104,7 +104,7 @@ body.markdown-viewer-body {
   line-height: 1.25;
 }
 
-.markdown-body .md-h2-toggle {
+.markdown-body .md-section-toggle {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -113,7 +113,7 @@ body.markdown-viewer-body {
   user-select: none;
 }
 
-.markdown-body .md-h2-toggle::after {
+.markdown-body .md-section-toggle::after {
   content: "\2212"; /* − */
   flex: none;
   color: var(--md-muted);
@@ -121,11 +121,11 @@ body.markdown-viewer-body {
   margin-left: auto;
 }
 
-.markdown-body .md-h2-section.collapsed .md-h2-toggle::after {
+.markdown-body .md-section.collapsed > .md-section-toggle::after {
   content: "+";
 }
 
-.markdown-body .md-h2-section.collapsed > :not(.md-h2-toggle) {
+.markdown-body .md-section.collapsed > :not(.md-section-toggle) {
   display: none;
 }
 

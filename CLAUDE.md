@@ -63,11 +63,14 @@ matching `*.md`/`.markdown`/`.mkd`/`.mdown` URLs (declared in
    text into `a.md-ticket-link` links to the ticket (opening in a new tab); code, existing links
    and raw `<a>` contents are skipped. `parse(raw, { ticketLinks })`
    overrides the base URL/prefixes, or `null` disables it.
-4. **Post-process** (`enhance()`, after step 5) — `wrapH2Sections()` groups each `<h2>` and its
-   following siblings into a `<section class="md-h2-section">` (content
-   before the first `<h2>` is left alone), and
-   `makeH2SectionsCollapsible()` wires a click handler on each `<h2>` to
-   toggle a `.collapsed` class on its section — this is what
+4. **Post-process** (`enhance()`, after step 5) — `wrapSections()` groups each `<h2>`/`<h3>`
+   (`SECTION_LEVELS`) and its following siblings, up to the next heading
+   of the same or a higher level, into a
+   `<section class="md-section md-hN-section">`, nesting h3 sections inside
+   their h2 section (content before the first such heading is left
+   alone), and `makeSectionsCollapsible()` wires a click handler on each
+   section heading (`.md-section-toggle`) to toggle a `.collapsed` class
+   on its own section — this is what
    `markdown.css` uses to hide/show section bodies. `addCollapseAllToggle()`
    then adds a fixed top-right
    `button.md-collapse-all` that collapses all sections (or expands them
@@ -127,7 +130,7 @@ and dark and only flips backgrounds/borders/text per theme — both files
 here follow that same split (see the `--md-*` custom properties at the
 top of `markdown.css` for the token-to-source mapping). `markdown.css`
 owns the page theme and the collapsible-section styling
-(`.md-h2-section`, `.md-h2-toggle`, `.collapsed`); the `github-*.min.css`
+(`.md-section`, `.md-section-toggle`, `.collapsed`); the `github-*.min.css`
 files own hljs code-block syntax token colors. `markdown.css` also
 defines `--md-accent-*` tokens that no CSS rule uses — they exist only as
 the palette source for mermaid diagrams. Keep both in sync with
